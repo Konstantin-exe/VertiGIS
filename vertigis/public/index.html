@@ -28,13 +28,84 @@
       rel="stylesheet"
       href="https://js.arcgis.com/4.19/esri/themes/light/main.css"
     />
+
     <script src="https://js.arcgis.com/4.19/"></script>
-    <script src="bundle.js"></script>
+    <script>
+      require([
+        'esri/config',
+        'esri/Map',
+        'esri/views/MapView',
+        'esri/layers/FeatureLayer',
+        'esri/symbols/SimpleMarkerSymbol',
+        'esri/renderers/SimpleRenderer',
+      ], function (
+        esriConfig,
+        Map,
+        MapView,
+        FeatureLayer,
+        SimpleMarkerSymbol,
+        SimpleRenderer,
+      ) {
+        esriConfig.apiKey =
+          'AAPKdec769a768d9408d87b28ce841f964fcMd1Z8FCI87tdg0sFVKgDBg_MyKC50dx4lReYyt1Tq2HuOiaJD7WLmFsh3E6zvrRD';
+
+        const map = new Map({
+          basemap: 'gray-vector', // Basemap layer service
+        });
+
+        const view = new MapView({
+          map: map,
+          center: [9.0, 53.0], // Longitude, latitude
+          zoom: 3, // Zoom level
+          container: 'viewDiv', // Div element
+        });
+        //Trailheads feature layer (points)
+        const layer = new FeatureLayer({
+          url:
+            'https://services3.arcgis.com/CAzgHIuoix0MYi3w/arcgis/rest/services/homework_data/FeatureServer/0',
+        });
+
+        layer.renderer = {
+          type: 'simple',
+          symbol: {
+            type: 'picture-marker',
+            url: 'pickle.png',
+
+            size: '7px',
+          },
+        };
+
+        map.add(layer);
+
+        document.getElementById('showCountry').onclick = getCountry;
+
+        function getCountry() {
+          const value = document.getElementById('countries').value;
+          layer.queryFeatures().then(function (results) {
+            results.features.forEach((country) => {
+              if (value === country.attributes.CODE) {
+                console.log(
+                  country.attributes.CODE,
+                  country.attributes.HOCHWERT,
+                );
+              }
+            });
+          });
+        }
+      });
+    </script>
 
     <title>React App</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="viewDiv">
+      <div style="position: fixed; right: 0; top: 0">
+        <label for="query">Country:</label>
+        <input type="text" name="query" id="countries" />
+        <button id="showCountry">Search</button>
+      </div>
+    </div>
     <div id="root"></div>
     <!--
       This HTML file is a template.
