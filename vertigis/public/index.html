@@ -38,6 +38,8 @@
         'esri/layers/FeatureLayer',
         'esri/symbols/SimpleMarkerSymbol',
         'esri/renderers/SimpleRenderer',
+        'esri/geometry/Polyline',
+        'esri/Graphic',
       ], function (
         esriConfig,
         Map,
@@ -45,6 +47,8 @@
         FeatureLayer,
         SimpleMarkerSymbol,
         SimpleRenderer,
+        Polyline,
+        Graphic,
       ) {
         esriConfig.apiKey =
           'AAPKdec769a768d9408d87b28ce841f964fcMd1Z8FCI87tdg0sFVKgDBg_MyKC50dx4lReYyt1Tq2HuOiaJD7WLmFsh3E6zvrRD';
@@ -70,7 +74,6 @@
           symbol: {
             type: 'picture-marker',
             url: 'pickle.png',
-
             size: '7px',
           },
         };
@@ -79,6 +82,12 @@
 
         document.getElementById('showCountry').onclick = getCountry;
 
+        let path = [];
+
+        function paths(RECHTSWERT, HOCHWERT) {
+          path.push([RECHTSWERT, HOCHWERT]);
+        }
+
         function getCountry() {
           const value = document.getElementById('countries').value;
           layer.queryFeatures().then(function (results) {
@@ -86,12 +95,32 @@
               if (value === country.attributes.CODE) {
                 console.log(
                   country.attributes.CODE,
+                  country.attributes.RECHTSWERT,
                   country.attributes.HOCHWERT,
                 );
+                paths(
+                  country.attributes.RECHTSWERT,
+                  country.attributes.HOCHWERT,
+                );
+                const lineSymbol = {
+                  type: 'simple-line', // autocasts as SimpleLineSymbol()
+                  color: [226, 119, 40],
+                  width: 4,
+                };
+                const polylineGraphic = new Graphic({
+                  geometry: polyline,
+                  symbol: lineSymbol,
+                });
+                view.graphics.add(polylineGraphic);
+                // console.log(path);
               }
             });
           });
         }
+        const polyline = {
+          type: 'polyline', // autocasts as new Polyline()
+          paths: path,
+        };
       });
     </script>
 
@@ -100,10 +129,19 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="viewDiv">
-      <div style="position: fixed; right: 0; top: 0">
+      <div
+        style="
+          position: fixed;
+          right: 25px;
+          top: 25px;
+          background-color: white;
+          padding: 25px;
+        "
+      >
         <label for="query">Country:</label>
         <input type="text" name="query" id="countries" />
         <button id="showCountry">Search</button>
+        <p id="error"></p>
       </div>
     </div>
     <div id="root"></div>
