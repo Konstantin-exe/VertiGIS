@@ -88,8 +88,25 @@
           path.push([RECHTSWERT, HOCHWERT]);
         }
 
+        function handleError(inputCountryCode) {
+          const countryCode = new Set();
+          const value = document.getElementById('countries').value;
+          const data = layer.queryFeatures().then(function (results) {
+            results.features.forEach((country) => {
+              countryCode.add(country.attributes.CODE);
+            });
+
+            if (!countryCode.has(inputCountryCode)) {
+              let err = document.getElementById('error');
+              let text = document.createTextNode('Not a supported country ');
+              err.appendChild(text);
+            }
+          });
+        }
+
         function getCountry() {
           const value = document.getElementById('countries').value;
+          handleError(value);
           layer.queryFeatures().then(function (results) {
             results.features.forEach((country) => {
               if (value === country.attributes.CODE) {
@@ -112,7 +129,6 @@
                   symbol: lineSymbol,
                 });
                 view.graphics.add(polylineGraphic);
-                // console.log(path);
               }
             });
           });
@@ -141,7 +157,7 @@
         <label for="query">Country:</label>
         <input type="text" name="query" id="countries" />
         <button id="showCountry">Search</button>
-        <p id="error"></p>
+        <p id="error" style="color: red"></p>
       </div>
     </div>
     <div id="root"></div>
